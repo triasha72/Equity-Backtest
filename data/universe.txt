@@ -1,0 +1,56 @@
+# One ticker per line. Lines starting with # are ignored.
+#
+# SURVIVORSHIP BIAS: this is a list of currently listed names. Companies
+# delisted during the sample are absent, which biases results optimistically.
+# Replace with a point-in-time constituent list (CRSP/WRDS) to remove it.
+AAPL
+MSFT
+JNJ
+JPM
+XOM
+PG
+KO
+PEP
+WMT
+HD
+CVX
+MRK
+ABBV
+PFE
+BAC
+CSCO
+ORCL
+ACN
+MCD
+DIS
+ADBE
+CRM
+NKE
+TXN
+NEE
+UNH
+LIN
+AMGN
+HON
+LOW
+UPS
+CAT
+GS
+MS
+BLK
+AXP
+DE
+LMT
+RTX
+SBUX
+MDT
+BMY
+GILD
+CVS
+T
+VZ
+CMCSA
+INTC
+MMM
+SO
+DUK
