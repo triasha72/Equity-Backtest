@@ -1,0 +1,7 @@
+run_utc,note,decile,cost_bps,min_train_months,min_names,ridge_alpha,features,months,start,end,sharpe_gross,sharpe_net,ann_return_net,ann_vol_net,tstat_net,max_drawdown_net,hit_rate_net,avg_monthly_turnover,avg_monthly_cost_bps,benchmark_sharpe_ew
+2026-07-29T13:49:35+00:00,,0.1,10.0,36,50,1.0,"mom_12_1,reversal,vol_12m,liquidity",131,2014-01-31,2024-11-30,0.324,0.246,0.0246,0.1001,0.813,-0.1635,0.527,0.652,6.52,0.997
+2026-07-29T13:54:50+00:00,momentum alone,0.1,10.0,36,50,1.0,mom_12_1,131,2014-01-31,2024-11-30,0.238,0.154,0.0142,0.0921,0.51,-0.1341,0.481,0.64,6.4,0.997
+2026-07-29T13:54:52+00:00,cost sensitivity: 20bps,0.1,20.0,36,50,1.0,"mom_12_1,reversal,vol_12m,liquidity",131,2014-01-31,2024-11-30,0.324,0.168,0.0168,0.1002,0.554,-0.1676,0.504,0.652,13.04,0.997
+2026-07-29T13:54:55+00:00,zero-cost upper bound,0.1,0.0,36,50,1.0,"mom_12_1,reversal,vol_12m,liquidity",131,2014-01-31,2024-11-30,0.324,0.324,0.0324,0.1,1.072,-0.1594,0.527,0.652,0.0,0.997
+2026-07-29T13:54:57+00:00,quintile spread,0.2,10.0,36,50,1.0,"mom_12_1,reversal,vol_12m,liquidity",131,2014-01-31,2024-11-30,0.559,0.478,0.0347,0.0726,1.579,-0.1174,0.534,0.489,4.89,0.997
+2026-07-29T13:54:59+00:00,"baseline: 4 features, 10bps, decile spread",0.1,10.0,36,50,1.0,"mom_12_1,reversal,vol_12m,liquidity",131,2014-01-31,2024-11-30,0.324,0.246,0.0246,0.1001,0.813,-0.1635,0.527,0.652,6.52,0.997

@@ -1,0 +1,15 @@
+{
+  "months": 131,
+  "start": "2014-01-31",
+  "end": "2024-11-30",
+  "sharpe_gross": 0.324,
+  "sharpe_net": 0.246,
+  "ann_return_net": 0.0246,
+  "ann_vol_net": 0.1001,
+  "tstat_net": 0.813,
+  "max_drawdown_net": -0.1635,
+  "hit_rate_net": 0.527,
+  "avg_monthly_turnover": 0.652,
+  "avg_monthly_cost_bps": 6.52,
+  "benchmark_sharpe_ew": 0.997
+}

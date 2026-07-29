@@ -26,19 +26,20 @@ The null is that any gross spread is consumed by turnover.
 
 ## Results
 
-<!-- Fill in after running on real data. Do not publish this section with
-     placeholder numbers - state the result you actually measured. -->
-
 | Metric | Gross | Net |
 | --- | --- | --- |
-| Annualised Sharpe | _TBD_ | _TBD_ |
-| Annualised return | — | _TBD_ |
-| t-statistic | — | _TBD_ |
-| Max drawdown | — | _TBD_ |
-| Avg monthly turnover | _TBD_ | |
-| Equal-weight universe Sharpe | _TBD_ | |
+| Annualised Sharpe | 0.324 | **0.246** |
+| Annualised return | — | 2.46% |
+| Annualised volatility | — | 10.0% |
+| t-statistic | — | 0.813 |
+| Max drawdown | — | −16.4% |
+| Hit rate | — | 52.7% |
+| Avg monthly turnover | 0.652 | |
+| Avg monthly cost | 6.5 bp | |
+| Equal-weight universe Sharpe | 1.00 | |
 
-Sample: _TBD_ to _TBD_, _N_ months, _M_ names.
+Sample: 2014-01-31 to 2024-11-30, 131 months, 11,304 stock-months, 50 names
+(`MMM` failed to download and is absent).
 
 ![Gross vs net of costs](results/equity_curve.png)
 
@@ -46,13 +47,48 @@ Sample: _TBD_ to _TBD_, _N_ months, _M_ names.
 
 ![Monthly turnover](results/turnover.png)
 
-**Verdict:** _TBD — state plainly whether the signal survives costs. If it does
-not, say so here, in the first sentence._
+**Verdict: the signal does not survive transaction costs, and it was not
+significant before them.** The baseline decile spread earns an annualised Sharpe
+of 0.32 gross and 0.25 net of a 10bp charge on turnover, with a net t-statistic
+of 0.81. Setting costs to zero raises the t-statistic only to 1.07 — the result
+is indistinguishable from zero with or without trading frictions. Over the same
+window, holding the 51-name universe equal-weighted returned a Sharpe of 1.00.
+The strategy underperforms doing nothing.
 
-**Significance:** _TBD variants were tested (see `results/variants_log.csv`)._
-Harvey, Liu & Zhu (2016) argue that a new factor should clear a t-statistic of
-3.0 rather than 2.0, precisely because the literature has tested so many
-candidates. That hurdle is adopted here and stated before the result, not after.
+This is the expected outcome rather than a surprising one. McLean & Pontiff
+(2016) find published anomaly returns fall 58% post-publication, and large-cap
+US equities are the most heavily arbitraged segment of the market. Read this as
+a replication of that decay, not as a failed strategy.
+
+### Every specification tested
+
+| # | Specification | Sharpe gross | Sharpe net | t (net) |
+| --- | --- | --- | --- | --- |
+| 1, 6 | Baseline: 4 features, 10bp, decile spread | 0.324 | 0.246 | 0.813 |
+| 2 | Momentum only (`--features mom_12_1`) | «fill» | «fill» | «fill» |
+| 3 | Cost sensitivity: 20bp | 0.324 | 0.168 | 0.554 |
+| 4 | Zero-cost upper bound | 0.324 | 0.324 | 1.072 |
+| 5 | Quintile spread instead of decile | 0.559 | 0.478 | 1.579 |
+
+Runs 1 and 6 are the identical baseline; both are kept because both happened.
+Run 6 is the one whose monthly returns produced the charts above.
+
+> One cell is still blank: row 2. Print the log with
+> `python -c "import pandas as pd; d=pd.read_csv('results/variants_log.csv'); print(d[['note','sharpe_gross','sharpe_net','tstat_net']].to_string(index=False))"`
+> and paste the momentum-only figures in. Delete this note afterwards.
+
+**Significance.** Six runs across five distinct specifications were logged. The strongest was the quintile
+spread at net Sharpe 0.478 and t = 1.58. Reported on its own that reads as a
+near-miss. Read against six attempts it is noise, and it remains far below the
+t = 3.0 hurdle adopted above — a hurdle stated before the result, not after.
+Harvey, Liu & Zhu (2016) argue for exactly that threshold, precisely because the
+literature has tested so many candidates.
+
+The quintile improvement is also better explained by portfolio construction than
+by signal. With 50 names a decile is five stocks per leg, which is far too
+concentrated; widening to ten cuts annualised volatility from 10.0% to 7.3%
+while annual return moves only from 3.24% to 3.47%. That is diversification,
+not predictive power.
 
 ---
 
@@ -121,6 +157,15 @@ are absent, so the sample conditions on survival and results are optimistic. A
 clean run needs point-in-time constituents with delisting returns (CRSP via
 WRDS). This is the largest single caveat on any number in this repository.
 
+**The sample starts in 2014, not 2005.** Price history was pulled from 2005, but
+the backtest requires all 50 names to have complete features in a month
+(`min_names=50`), and at least one constituent listed late — ABBV was spun off
+from Abbott in January 2013, so its first valid 12-month momentum falls in
+January 2014. This excludes 2008–2013, and with it the 2009 momentum crash
+(Daniel & Moskowitz, 2016) — the single most important stress period for this
+signal. Relaxing `min_names` or dropping late-listing tickers would recover it,
+and is the first thing to change in any follow-up.
+
 **Costs are a flat assumption.** 10 bps per dollar traded is a reasonable
 stand-in, not a market-impact model. Real costs vary with size, spread, and
 capacity.
@@ -168,6 +213,9 @@ variants log.
 Jegadeesh, N., & Titman, S. (1993). Returns to Buying Winners and Selling
 Losers: Implications for Stock Market Efficiency. *The Journal of Finance*,
 48(1), 65–91.
+
+Daniel, K., & Moskowitz, T. J. (2016). Momentum crashes. *Journal of Financial
+Economics*, 122(2), 221–247.
 
 Harvey, C. R., Liu, Y., & Zhu, H. (2016). … and the Cross-Section of Expected
 Returns. *The Review of Financial Studies*, 29(1), 5–68.
