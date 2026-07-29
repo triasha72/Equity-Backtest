@@ -65,7 +65,7 @@ a replication of that decay, not as a failed strategy.
 | # | Specification | Sharpe gross | Sharpe net | t (net) |
 | --- | --- | --- | --- | --- |
 | 1, 6 | Baseline: 4 features, 10bp, decile spread | 0.324 | 0.246 | 0.813 |
-| 2 | Momentum only (`--features mom_12_1`) | «fill» | «fill» | «fill» |
+| 2 | Momentum only (`--features mom_12_1`) | 0.238 | 0.154 | 0.510 |
 | 3 | Cost sensitivity: 20bp | 0.324 | 0.168 | 0.554 |
 | 4 | Zero-cost upper bound | 0.324 | 0.324 | 1.072 |
 | 5 | Quintile spread instead of decile | 0.559 | 0.478 | 1.579 |
@@ -73,9 +73,9 @@ a replication of that decay, not as a failed strategy.
 Runs 1 and 6 are the identical baseline; both are kept because both happened.
 Run 6 is the one whose monthly returns produced the charts above.
 
-> One cell is still blank: row 2. Print the log with
-> `python -c "import pandas as pd; d=pd.read_csv('results/variants_log.csv'); print(d[['note','sharpe_gross','sharpe_net','tstat_net']].to_string(index=False))"`
-> and paste the momentum-only figures in. Delete this note afterwards.
+Momentum alone is weaker than the full four-feature specification (0.238 gross
+against 0.324), so reversal, volatility and liquidity do contribute something —
+though not enough to matter, since no specification approaches significance.
 
 **Significance.** Six runs across five distinct specifications were logged. The strongest was the quintile
 spread at net Sharpe 0.478 and t = 1.58. Reported on its own that reads as a
