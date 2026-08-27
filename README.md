@@ -1,5 +1,7 @@
 # Cross-Sectional Equity Signal: An Honest Backtest
 
+[Portfolio case study](https://triasha72.github.io/Portfolio/case-backtest.html)
+
 ![tests](https://github.com/triasha72/Equity-Backtest/actions/workflows/tests.yml/badge.svg)
 
 A monthly, dollar-neutral, cross-sectional equity strategy built to a strict
