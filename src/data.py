@@ -10,9 +10,11 @@ This is a known, unfixed limitation of the free-data version of this study. A
 survivorship-bias-free run requires a point-in-time database with delisting
 returns (CRSP via WRDS). See README section "Limitations".
 """
+
 from __future__ import annotations
 
 import os
+
 import pandas as pd
 
 
@@ -41,7 +43,12 @@ def fetch_prices(
     import yfinance as yf
 
     raw = yf.download(
-        tickers, start=start, end=end, progress=False, auto_adjust=True, group_by="column"
+        tickers,
+        start=start,
+        end=end,
+        progress=False,
+        auto_adjust=True,
+        group_by="column",
     )
     close = raw["Close"]
     volume = raw["Volume"]

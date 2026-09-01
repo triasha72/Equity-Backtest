@@ -11,6 +11,25 @@ The point of this repository is not to present a profitable strategy. It is to
 run a well-known effect through an evaluation protocol strict enough that the
 result, whatever it turns out to be, can be believed.
 
+## Project story
+
+**Situation.** Backtests can look profitable because they see future data, omit
+failed companies, ignore trading costs, or report only the best specification.
+
+**Task.** I wanted to test a familiar momentum signal under a walk-forward
+protocol and keep the negative result if the evidence did not support it.
+
+**Action.** I used real adjusted prices and volume, trained only on labels that
+were available at each formation date, standardized features within each monthly
+cross-section, charged turnover costs, and logged every specification. I also
+added a point-in-time membership adapter for a future survivorship-free run; it
+rejects overlapping membership records rather than guessing which record wins.
+
+**Result.** The baseline reached a net annualized Sharpe of `0.246` and a
+t-statistic of `0.813`, well below the preregistered evidence hurdle. The correct
+conclusion is not that this is a profitable strategy. It is that the tested
+signal was indistinguishable from zero on this biased fixed-universe sample.
+
 ---
 
 ## Hypothesis
@@ -153,11 +172,14 @@ would still score.
 
 ## Known limitations
 
-**Survivorship bias — present and unfixed.** The universe file lists *currently
+**Survivorship bias — present in the reported result.** The universe file lists *currently
 traded* tickers. Companies delisted, acquired, or bankrupted during the sample
 are absent, so the sample conditions on survival and results are optimistic. A
 clean run needs point-in-time constituents with delisting returns (CRSP via
-WRDS). This is the largest single caveat on any number in this repository.
+WRDS). The code now accepts explicit membership intervals through
+`--membership`, but the historical result has not been rerun with licensed CRSP
+records. This remains the largest caveat on every return number in this
+repository.
 
 **The sample starts in 2014, not 2005.** Price history was pulled from 2005, but
 the backtest requires all 50 names to have complete features in a month
@@ -197,6 +219,7 @@ pip install -r requirements.txt
 pytest tests/ -q                    # 7 tests, synthetic data, no network needed
 
 python run.py --note "baseline: 4 features, 10bps, decile spread"
+python run.py --membership data/point_in_time_membership.csv --note "point-in-time universe"
 python make_plots.py
 
 python run.py --features mom_12_1 --note "momentum alone"

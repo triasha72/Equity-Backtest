@@ -7,11 +7,13 @@ results/. Run after run.py.
 The gross-vs-net pair is the important one: the gap between the two curves is
 the cost of turnover, and showing it is the point of the whole exercise.
 """
+
 from __future__ import annotations
 
 import os
 
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -41,16 +43,21 @@ def _style(ax, title: str, ylabel: str) -> None:
 
 def equity_curve(df: pd.DataFrame) -> str:
     fig, ax = plt.subplots(figsize=(8, 4))
-    ax.plot((1 + df["gross"]).cumprod(), color=MUTED, lw=1.6,
-            label="Gross of costs", linestyle="--")
-    ax.plot((1 + df["net"]).cumprod(), color=INK, lw=1.9,
-            label="Net of costs")
+    ax.plot(
+        (1 + df["gross"]).cumprod(),
+        color=MUTED,
+        lw=1.6,
+        label="Gross of costs",
+        linestyle="--",
+    )
+    ax.plot((1 + df["net"]).cumprod(), color=INK, lw=1.9, label="Net of costs")
     ax.axhline(1.0, color="black", lw=0.7, alpha=0.4)
-    _style(ax, "Cumulative return, gross vs net of transaction costs",
-           "Growth of 1.0")
+    _style(ax, "Cumulative return, gross vs net of transaction costs", "Growth of 1.0")
     ax.legend(frameon=False, fontsize=8.5)
     path = f"{OUT}/equity_curve.png"
-    fig.tight_layout(); fig.savefig(path, dpi=150); plt.close(fig)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
     return path
 
 
@@ -62,19 +69,28 @@ def drawdown(df: pd.DataFrame) -> str:
     ax.plot(dd, color=WARN, lw=1.2)
     _style(ax, "Drawdown, net of costs", "Peak-to-trough")
     path = f"{OUT}/drawdown.png"
-    fig.tight_layout(); fig.savefig(path, dpi=150); plt.close(fig)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
     return path
 
 
 def turnover(df: pd.DataFrame) -> str:
     fig, ax = plt.subplots(figsize=(8, 2.8))
     ax.plot(df["turnover"], color=INK, lw=1.0, alpha=0.75)
-    ax.axhline(df["turnover"].mean(), color=WARN, lw=1.1, linestyle="--",
-               label=f"mean {df['turnover'].mean():.2f}")
+    ax.axhline(
+        df["turnover"].mean(),
+        color=WARN,
+        lw=1.1,
+        linestyle="--",
+        label=f"mean {df['turnover'].mean():.2f}",
+    )
     _style(ax, "Monthly turnover (total absolute weight change)", "Turnover")
     ax.legend(frameon=False, fontsize=8.5)
     path = f"{OUT}/turnover.png"
-    fig.tight_layout(); fig.savefig(path, dpi=150); plt.close(fig)
+    fig.tight_layout()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
     return path
 
 

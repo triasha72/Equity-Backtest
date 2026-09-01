@@ -8,6 +8,7 @@ outstanding. Applying *current* shares outstanding retroactively is lookahead
 bias, so this study uses log average daily dollar volume as a size/liquidity
 proxy instead and says so rather than quietly introducing the bias.
 """
+
 from __future__ import annotations
 
 import numpy as np

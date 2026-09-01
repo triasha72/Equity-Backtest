@@ -3,6 +3,7 @@
 Reported gross *and* net. A signal that only works gross of costs is not a
 signal, it is a description of the past.
 """
+
 from __future__ import annotations
 
 import numpy as np
@@ -29,7 +30,7 @@ def _max_drawdown(r: pd.Series) -> float:
 def summarise(bt: pd.DataFrame, bench: pd.Series | None = None) -> dict:
     g, n = bt["gross"], bt["net"]
     out = {
-        "months": int(len(bt)),
+        "months": len(bt),
         "start": str(bt.index.min().date()),
         "end": str(bt.index.max().date()),
         "sharpe_gross": round(_sharpe(g), 3),

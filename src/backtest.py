@@ -11,11 +11,11 @@ At each formation month t:
   * the model predicts the cross-section of t+1 returns from features at t
   * nothing observed after t enters the fit
 """
+
 from __future__ import annotations
 
-from dataclasses import dataclass, asdict
+from dataclasses import asdict, dataclass
 
-import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import make_pipeline
@@ -26,8 +26,8 @@ FEATURES = ["mom_12_1", "reversal", "vol_12m", "liquidity"]
 
 @dataclass(frozen=True)
 class Config:
-    decile: float = 0.10          # fraction of the cross-section in each leg
-    cost_bps: float = 10.0        # charged on every dollar traded
+    decile: float = 0.10  # fraction of the cross-section in each leg
+    cost_bps: float = 10.0  # charged on every dollar traded
     min_train_months: int = 36
     min_names: int = 50
     ridge_alpha: float = 1.0
@@ -45,7 +45,7 @@ def _make_model(alpha: float):
 
 def _weights(pred: pd.Series, decile: float) -> pd.Series:
     """Dollar-neutral decile spread: +0.5 gross long, -0.5 gross short."""
-    n = max(int(round(len(pred) * decile)), 1)
+    n = max(round(len(pred) * decile), 1)
     ranked = pred.sort_values(ascending=False)
     longs, shorts = ranked.index[:n], ranked.index[-n:]
     w = pd.Series(0.0, index=pred.index)
@@ -88,8 +88,14 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         cost = turnover * cfg.cost_bps / 1e4
 
         rows.append(
-            {"date": t, "gross": gross, "turnover": turnover,
-             "cost": cost, "net": gross - cost, "n_names": len(cur)}
+            {
+                "date": t,
+                "gross": gross,
+                "turnover": turnover,
+                "cost": cost,
+                "net": gross - cost,
+                "n_names": len(cur),
+            }
         )
         prev_w = w
 

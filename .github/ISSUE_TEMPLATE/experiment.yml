@@ -1,0 +1,21 @@
+name: Backtest proposal
+description: Log a specification before running it so the denominator stays honest.
+title: "experiment: "
+labels: ["experiment"]
+body:
+  - type: textarea
+    id: hypothesis
+    attributes: {label: "Hypothesis and decision rule"}
+    validations: {required: true}
+  - type: textarea
+    id: universe
+    attributes: {label: "Universe and data lineage", description: "State the point-in-time membership source, delisting treatment, dates, and license."}
+    validations: {required: true}
+  - type: textarea
+    id: protocol
+    attributes: {label: "Walk-forward protocol", description: "Freeze features, costs, formation rules, validation period, and protected test period."}
+    validations: {required: true}
+  - type: textarea
+    id: risks
+    attributes: {label: "Bias and risk checks", description: "Include survivorship, lookahead, multiple testing, turnover, capacity, and drawdown."}
+    validations: {required: true}

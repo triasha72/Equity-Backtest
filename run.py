@@ -6,6 +6,7 @@ denominator for any t-statistic quoted in the README: if twenty specifications
 were tried, the twentieth's significance must be read against twenty attempts,
 not one. See Harvey, Liu & Zhu (2016).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -15,10 +16,11 @@ from datetime import datetime, timezone
 
 import pandas as pd
 
-from src.data import load_universe, fetch_prices
+from src.backtest import FEATURES, Config, benchmark, run
+from src.data import fetch_prices, load_universe
+from src.evaluate import report, summarise
 from src.features import build_panel, cross_sectional_zscore
-from src.backtest import Config, run, benchmark, FEATURES
-from src.evaluate import summarise, report
+from src.membership import apply_point_in_time_membership, load_membership
 
 LOG = "results/variants_log.csv"
 
@@ -26,6 +28,10 @@ LOG = "results/variants_log.csv"
 def main() -> None:
     p = argparse.ArgumentParser(description="Cross-sectional equity signal backtest")
     p.add_argument("--universe", default="data/universe.txt")
+    p.add_argument(
+        "--membership",
+        help="optional point-in-time CSV with ticker,start_date,end_date columns",
+    )
     p.add_argument("--start", default="2005-01-01")
     p.add_argument("--end", default="2024-12-31")
     p.add_argument("--features", default=",".join(FEATURES))
@@ -41,6 +47,9 @@ def main() -> None:
 
     prices = fetch_prices(tickers, a.start, a.end, force=a.force_refetch)
     panel = build_panel(prices)
+    if a.membership:
+        panel = apply_point_in_time_membership(panel, load_membership(a.membership))
+        print(f"point-in-time membership: {a.membership}")
     feats = [f.strip() for f in a.features.split(",") if f.strip()]
     panel = cross_sectional_zscore(panel, feats)
     print(f"panel: {len(panel):,} stock-months, {len(feats)} features")
@@ -72,7 +81,9 @@ def main() -> None:
     pd.DataFrame([row]).to_csv(
         LOG, mode="a", header=not os.path.exists(LOG), index=False
     )
-    print(f"\nlogged to {LOG} (variant #{sum(1 for _ in open(LOG)) - 1})")
+    with open(LOG) as log_file:
+        variant_number = sum(1 for _ in log_file) - 1
+    print(f"\nlogged to {LOG} (variant #{variant_number})")
 
 
 if __name__ == "__main__":
