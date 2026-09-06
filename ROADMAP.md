@@ -14,14 +14,17 @@ does or does not work in a survivorship-free market universe.
 - Turnover-based cost deductions and a complete variant log.
 - A point-in-time membership adapter that accepts explicit listing intervals and
   rejects overlapping records.
+- A WRDS/CRSP monthly adapter keyed by permanent security ID. It combines
+  regular and delisting returns and builds lagged features without filling
+  unknown delisting data.
 - Synthetic tests for mechanics and leakage. These tests are not return evidence.
 
 ## The next real-data run
 
 A credible follow-up needs a licensed point-in-time security database with
-delisting returns, such as CRSP through WRDS. The membership adapter is ready,
-but no CRSP result is claimed because those records are not available in this
-repository.
+delisting returns, such as CRSP through WRDS. The ingestion and feature adapter
+is ready, but no CRSP result is claimed because those licensed records are not
+available in this repository.
 
 That run should also include the 2008–2009 momentum crash, use a validation
 period for model and portfolio choices, and reserve a later test period for one

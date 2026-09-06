@@ -177,9 +177,11 @@ traded* tickers. Companies delisted, acquired, or bankrupted during the sample
 are absent, so the sample conditions on survival and results are optimistic. A
 clean run needs point-in-time constituents with delisting returns (CRSP via
 WRDS). The code now accepts explicit membership intervals through
-`--membership`, but the historical result has not been rerun with licensed CRSP
-records. This remains the largest caveat on every return number in this
-repository.
+`--membership`. `src/crsp.py` also validates a standard monthly WRDS export,
+keys companies by PERMNO, combines `RET` with `DLRET`, and creates only lagged
+features. The historical result has not been rerun because licensed CRSP records
+are not included. This remains the largest caveat on every return number in
+this repository.
 
 **The sample starts in 2014, not 2005.** Price history was pulled from 2005, but
 the backtest requires all 50 names to have complete features in a month
