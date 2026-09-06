@@ -18,7 +18,9 @@ def load_crsp_monthly(path: str | Path) -> pd.DataFrame:
         raise ValueError(f"CRSP export is missing columns: {sorted(missing)}")
     frame = frame.copy()
     frame["date"] = (
-        pd.to_datetime(frame["date"], errors="raise").dt.to_period("M").dt.to_timestamp("M")
+        pd.to_datetime(frame["date"], errors="raise")
+        .dt.to_period("M")
+        .dt.to_timestamp("M")
     )
     frame["ticker"] = frame["PERMNO"].astype("Int64").astype(str)
     for column in ("RET", "DLRET", "PRC", "VOL", "SHROUT"):
@@ -43,7 +45,9 @@ def build_crsp_panel(frame: pd.DataFrame) -> pd.DataFrame:
     for ticker, security in frame.groupby("ticker", sort=True):
         security = security.sort_values("date").copy()
         lagged = security["adjusted_return"].shift(1)
-        security["mom_12_1"] = (1.0 + lagged).rolling(11, min_periods=11).apply(np.prod) - 1.0
+        security["mom_12_1"] = (1.0 + lagged).rolling(11, min_periods=11).apply(
+            np.prod
+        ) - 1.0
         security["reversal"] = security["adjusted_return"]
         security["vol_12m"] = lagged.rolling(12, min_periods=12).std()
         security["liquidity"] = np.log1p(
@@ -53,5 +57,13 @@ def build_crsp_panel(frame: pd.DataFrame) -> pd.DataFrame:
         security["ticker"] = ticker
         rows.append(security)
     panel = pd.concat(rows, ignore_index=True)
-    columns = ["date", "ticker", "mom_12_1", "reversal", "vol_12m", "liquidity", "target"]
+    columns = [
+        "date",
+        "ticker",
+        "mom_12_1",
+        "reversal",
+        "vol_12m",
+        "liquidity",
+        "target",
+    ]
     return panel[columns].dropna().set_index(["date", "ticker"]).sort_index()
