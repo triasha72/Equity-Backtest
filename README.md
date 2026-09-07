@@ -34,6 +34,9 @@ signal was indistinguishable from zero on this biased fixed-universe sample.
 
 ## Hypothesis
 
+The full data flow and the controls against look-ahead bias are shown in
+[the architecture note](docs/architecture.md).
+
 Cross-sectional momentum (Jegadeesh & Titman, 1993) predicts the relative
 ordering of next-month equity returns. Stated in the form actually tested:
 
