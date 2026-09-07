@@ -195,12 +195,17 @@ January 2014. This excludes 2008–2013, and with it the 2009 momentum crash
 signal. Relaxing `min_names` or dropping late-listing tickers would recover it,
 and is the first thing to change in any follow-up.
 
-**Costs are a flat assumption.** 10 bps per dollar traded is a reasonable
-stand-in, not a market-impact model. Real costs vary with size, spread, and
-capacity.
+**Costs and capacity are simplified.** 10 bps per dollar traded is a reasonable
+stand-in, not a market-impact model. The backtest now also supports a
+conservative participation cap: each monthly rebalance is uniformly slowed when
+the implied trade would exceed a chosen share of 63-day average daily dollar
+volume. This keeps the long-short portfolio neutral, but it is not a
+name-specific execution simulator and does not model spreads or market impact.
 
-**No capacity analysis.** Equal-weighted decile portfolios over large caps say
-nothing about how much capital the signal absorbs.
+**No calibrated capacity analysis.** The participation-cap sensitivity is a
+transparent stress test. A credible capacity claim still needs historical bid-
+ask spreads, market impact data, borrow availability, and a point-in-time
+universe.
 
 **Monthly frequency only.** Nothing here speaks to intraday or weekly horizons.
 

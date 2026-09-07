@@ -14,6 +14,7 @@ At each formation month t:
 
 from __future__ import annotations
 
+import math
 from dataclasses import asdict, dataclass
 
 import pandas as pd
@@ -31,6 +32,9 @@ class Config:
     min_train_months: int = 36
     min_names: int = 50
     ridge_alpha: float = 1.0
+    portfolio_notional_usd: float = 1_000_000.0
+    max_daily_volume_participation: float = 0.05
+    trading_days_per_month: int = 21
     features: tuple[str, ...] = tuple(FEATURES)
 
     def as_dict(self) -> dict:
@@ -52,6 +56,41 @@ def _weights(pred: pd.Series, decile: float) -> pd.Series:
     w[longs] = 0.5 / n
     w[shorts] = -0.5 / n
     return w
+
+
+def _capacity_constrained_weights(
+    target: pd.Series,
+    previous: pd.Series,
+    log_daily_dollar_volume: pd.Series,
+    cfg: Config,
+) -> tuple[pd.Series, float]:
+    """Move toward target weights without exceeding a uniform liquidity limit.
+
+    A shared scale preserves the strategy's dollar-neutral shape.  It is a
+    deliberately conservative capacity model: a single illiquid name slows the
+    entire rebalance instead of assuming unrestricted fills or inventing a
+    name-specific execution optimiser.
+    """
+
+    if cfg.portfolio_notional_usd <= 0:
+        raise ValueError("portfolio_notional_usd must be positive")
+    if not 0 < cfg.max_daily_volume_participation <= 1:
+        raise ValueError("max_daily_volume_participation must be in (0, 1]")
+    if cfg.trading_days_per_month < 1:
+        raise ValueError("trading_days_per_month must be positive")
+    delta = target - previous
+    desired_dollars = delta.abs() * cfg.portfolio_notional_usd
+    monthly_capacity = (
+        log_daily_dollar_volume.map(float).map(math.exp)
+        * cfg.trading_days_per_month
+        * cfg.max_daily_volume_participation
+    )
+    tradable = desired_dollars > 0
+    if not tradable.any():
+        return target, 1.0
+    scale = float((monthly_capacity[tradable] / desired_dollars[tradable]).min())
+    scale = max(0.0, min(1.0, scale))
+    return previous + scale * delta, scale
 
 
 def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
@@ -79,11 +118,14 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         model.fit(train[feats].values, train["target"].values)
         pred = pd.Series(model.predict(cur[feats].values), index=cur.index)
 
-        w = _weights(pred, cfg.decile)
+        target_weights = _weights(pred, cfg.decile)
+        aligned_prev = prev_w.reindex(target_weights.index).fillna(0.0)
+        w, execution_scale = _capacity_constrained_weights(
+            target_weights, aligned_prev, cur["liquidity"], cfg
+        )
         realised = cur["target"].reindex(w.index).fillna(0.0)
         gross = float((w * realised).sum())
 
-        aligned_prev = prev_w.reindex(w.index).fillna(0.0)
         turnover = float((w - aligned_prev).abs().sum())
         cost = turnover * cfg.cost_bps / 1e4
 
@@ -95,6 +137,8 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
                 "cost": cost,
                 "net": gross - cost,
                 "n_names": len(cur),
+                "execution_scale": execution_scale,
+                "capacity_constrained": execution_scale < 1.0,
             }
         )
         prev_w = w

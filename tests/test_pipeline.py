@@ -10,7 +10,14 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from src.backtest import FEATURES, Config, _weights, benchmark, run
+from src.backtest import (
+    FEATURES,
+    Config,
+    _capacity_constrained_weights,
+    _weights,
+    benchmark,
+    run,
+)
 from src.features import build_panel, cross_sectional_zscore
 from src.membership import apply_point_in_time_membership, load_membership
 
@@ -56,6 +63,20 @@ def test_weights_are_dollar_neutral():
     w = _weights(pred, 0.10)
     assert abs(w.sum()) < 1e-12
     assert abs(w.abs().sum() - 1.0) < 1e-12
+
+
+def test_capacity_limit_preserves_neutrality_and_slows_rebalance():
+    target = pd.Series({"A": 0.5, "B": -0.5})
+    previous = pd.Series({"A": 0.0, "B": 0.0})
+    liquidity = pd.Series({"A": np.log(100.0), "B": np.log(100.0)})
+    weights, scale = _capacity_constrained_weights(
+        target,
+        previous,
+        liquidity,
+        Config(portfolio_notional_usd=1_000_000, max_daily_volume_participation=0.01),
+    )
+    assert 0 < scale < 1
+    assert abs(weights.sum()) < 1e-12
 
 
 def test_backtest_runs_and_costs_reduce_return():

@@ -42,6 +42,10 @@ def summarise(bt: pd.DataFrame, bench: pd.Series | None = None) -> dict:
         "hit_rate_net": round(float((n > 0).mean()), 3),
         "avg_monthly_turnover": round(float(bt["turnover"].mean()), 3),
         "avg_monthly_cost_bps": round(float(bt["cost"].mean() * 1e4), 2),
+        "capacity_constrained_month_fraction": round(
+            float(bt["capacity_constrained"].mean()), 3
+        ),
+        "mean_execution_scale": round(float(bt["execution_scale"].mean()), 3),
     }
     if bench is not None and len(bench):
         b = bench.reindex(bt.index).dropna()
