@@ -38,6 +38,9 @@ def main() -> None:
     p.add_argument("--decile", type=float, default=0.10)
     p.add_argument("--cost-bps", type=float, default=10.0)
     p.add_argument("--ridge-alpha", type=float, default=1.0)
+    p.add_argument("--portfolio-notional-usd", type=float, default=1_000_000.0)
+    p.add_argument("--max-daily-volume-participation", type=float, default=0.05)
+    p.add_argument("--trading-days-per-month", type=int, default=21)
     p.add_argument("--note", default="", help="what this variant was testing")
     p.add_argument("--force-refetch", action="store_true")
     a = p.parse_args()
@@ -58,6 +61,9 @@ def main() -> None:
         decile=a.decile,
         cost_bps=a.cost_bps,
         ridge_alpha=a.ridge_alpha,
+        portfolio_notional_usd=a.portfolio_notional_usd,
+        max_daily_volume_participation=a.max_daily_volume_participation,
+        trading_days_per_month=a.trading_days_per_month,
         features=tuple(feats),
     )
     bt = run(panel, cfg)

@@ -233,6 +233,8 @@ python run.py --membership data/point_in_time_membership.csv --note "point-in-ti
 python make_plots.py
 
 python run.py --features mom_12_1 --note "momentum alone"
+python run.py --portfolio-notional-usd 10000000 --max-daily-volume-participation 0.01 \
+  --note "10m notional, 1 percent ADV participation sensitivity"
 python run.py --cost-bps 20 --note "cost sensitivity: 20bps"
 python run.py --cost-bps 0  --note "zero-cost upper bound"
 python run.py --decile 0.20 --note "quintile spread"
