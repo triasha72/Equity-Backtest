@@ -256,3 +256,7 @@ Economics*, 122(2), 221–247.
 
 Harvey, C. R., Liu, Y., & Zhu, H. (2016). … and the Cross-Section of Expected
 Returns. *The Review of Financial Studies*, 29(1), 5–68.
+
+## Implementation update
+
+See [implementation and evidence limits](docs/accounting-boundaries.md).

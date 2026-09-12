@@ -17,6 +17,7 @@ from __future__ import annotations
 import math
 from dataclasses import asdict, dataclass
 
+import numpy as np
 import pandas as pd
 from sklearn.linear_model import Ridge
 from sklearn.pipeline import make_pipeline
@@ -49,7 +50,9 @@ def _make_model(alpha: float):
 
 def _weights(pred: pd.Series, decile: float) -> pd.Series:
     """Dollar-neutral decile spread: +0.5 gross long, -0.5 gross short."""
-    n = max(round(len(pred) * decile), 1)
+    if not 0 < decile <= 0.5 or len(pred) < 2:
+        raise ValueError("decile must be in (0, 0.5] with at least two names")
+    n = min(max(round(len(pred) * decile), 1), len(pred) // 2)
     ranked = pred.sort_values(ascending=False)
     longs, shorts = ranked.index[:n], ranked.index[-n:]
     w = pd.Series(0.0, index=pred.index)
@@ -78,6 +81,8 @@ def _capacity_constrained_weights(
         raise ValueError("max_daily_volume_participation must be in (0, 1]")
     if cfg.trading_days_per_month < 1:
         raise ValueError("trading_days_per_month must be positive")
+    if not np.isfinite(log_daily_dollar_volume).all():
+        raise ValueError("Capacity inputs must be finite raw log dollar volumes")
     delta = target - previous
     desired_dollars = delta.abs() * cfg.portfolio_notional_usd
     monthly_capacity = (
@@ -95,6 +100,10 @@ def _capacity_constrained_weights(
 
 def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
     """Return a per-month frame: gross return, turnover, cost, net return."""
+    if "log_daily_dollar_volume" not in panel:
+        raise ValueError(
+            "raw log_daily_dollar_volume is required for capacity; do not use z-scores"
+        )
     feats = list(cfg.features)
     dates = panel.index.get_level_values("date").unique().sort_values()
 
@@ -119,14 +128,24 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         pred = pd.Series(model.predict(cur[feats].values), index=cur.index)
 
         target_weights = _weights(pred, cfg.decile)
+        # Explicit formation-time liquidation at the last mark. Charge exit turnover.
+        # This is an accounting convention, not a calibrated forced-execution model.
+        departed = prev_w.index.difference(target_weights.index)
+        exit_turnover = float(prev_w.reindex(departed).abs().sum())
         aligned_prev = prev_w.reindex(target_weights.index).fillna(0.0)
         w, execution_scale = _capacity_constrained_weights(
-            target_weights, aligned_prev, cur["liquidity"], cfg
+            target_weights, aligned_prev, cur["log_daily_dollar_volume"], cfg
         )
-        realised = cur["target"].reindex(w.index).fillna(0.0)
+        realised = cur["target"].reindex(w.index)
+        held = w.abs() > 1e-12
+        if not np.isfinite(realised[held]).all():
+            raise ValueError(
+                f"Missing realized return for held securities at {t}; supply delisting data"
+            )
+        realised = realised.fillna(0.0)
         gross = float((w * realised).sum())
 
-        turnover = float((w - aligned_prev).abs().sum())
+        turnover = float((w - aligned_prev).abs().sum()) + exit_turnover
         cost = turnover * cfg.cost_bps / 1e4
 
         rows.append(
@@ -134,6 +153,7 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
                 "date": t,
                 "gross": gross,
                 "turnover": turnover,
+                "exit_turnover": exit_turnover,
                 "cost": cost,
                 "net": gross - cost,
                 "n_names": len(cur),
@@ -143,7 +163,7 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         )
         prev_w = w
 
-    return pd.DataFrame(rows).set_index("date")
+    return pd.DataFrame(rows).set_index("date") if rows else pd.DataFrame()
 
 
 def benchmark(panel: pd.DataFrame) -> pd.Series:

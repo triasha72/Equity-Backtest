@@ -37,11 +37,11 @@ def build_panel(prices: pd.DataFrame) -> pd.DataFrame:
     close = prices["close"].sort_index()
     volume = prices["volume"].sort_index()
 
-    daily_ret = close.pct_change()
+    daily_ret = close.pct_change(fill_method=None)
     dollar_vol = close * volume
 
     m_close = _month_end(close)
-    m_ret = m_close.pct_change()
+    m_ret = m_close.pct_change(fill_method=None)
 
     # 12-1 momentum: skip the most recent month, compound the 11 before it.
     gross = (1.0 + m_ret).shift(1)
@@ -61,6 +61,7 @@ def build_panel(prices: pd.DataFrame) -> pd.DataFrame:
         "reversal": reversal,
         "vol_12m": vol,
         "liquidity": liq,
+        "log_daily_dollar_volume": liq,
         "target": target,
     }
     panel = pd.concat(

@@ -16,9 +16,13 @@ def load_membership(path: str | Path) -> pd.DataFrame:
     if missing:
         raise ValueError(f"membership file is missing columns: {sorted(missing)}")
     frame = frame.copy()
+    if frame["ticker"].isna().any() or frame["start_date"].isna().any():
+        raise ValueError("ticker and start_date are required")
     frame["ticker"] = frame["ticker"].astype(str).str.upper().str.strip()
     frame["start_date"] = pd.to_datetime(frame["start_date"], errors="raise")
-    frame["end_date"] = pd.to_datetime(frame["end_date"], errors="coerce")
+    frame["end_date"] = pd.to_datetime(
+        frame["end_date"].replace(r"^\s*$", pd.NA, regex=True), errors="raise"
+    )
     if frame["ticker"].eq("").any():
         raise ValueError("membership file contains an empty ticker")
     if (frame["end_date"].notna() & (frame["end_date"] < frame["start_date"])).any():

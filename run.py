@@ -15,8 +15,8 @@ import os
 from datetime import datetime, timezone
 
 import pandas as pd
-
 from src.backtest import FEATURES, Config, benchmark, run
+from src.crsp import build_crsp_panel, load_crsp_monthly
 from src.data import fetch_prices, load_universe
 from src.evaluate import report, summarise
 from src.features import build_panel, cross_sectional_zscore
@@ -27,6 +27,9 @@ LOG = "results/variants_log.csv"
 
 def main() -> None:
     p = argparse.ArgumentParser(description="Cross-sectional equity signal backtest")
+    p.add_argument(
+        "--crsp", help="licensed monthly CRSP CSV; membership IDs must be PERMNO"
+    )
     p.add_argument("--universe", default="data/universe.txt")
     p.add_argument(
         "--membership",
@@ -45,11 +48,14 @@ def main() -> None:
     p.add_argument("--force-refetch", action="store_true")
     a = p.parse_args()
 
-    tickers = load_universe(a.universe)
-    print(f"universe: {len(tickers)} tickers  {a.start} -> {a.end}")
-
-    prices = fetch_prices(tickers, a.start, a.end, force=a.force_refetch)
-    panel = build_panel(prices)
+    if a.crsp:
+        panel = build_crsp_panel(load_crsp_monthly(a.crsp))
+        dates = panel.index.get_level_values("date")
+        panel = panel[(dates >= a.start) & (dates <= a.end)]
+    else:
+        tickers = load_universe(a.universe)
+        prices = fetch_prices(tickers, a.start, a.end, force=a.force_refetch)
+        panel = build_panel(prices)
     if a.membership:
         panel = apply_point_in_time_membership(panel, load_membership(a.membership))
         print(f"point-in-time membership: {a.membership}")

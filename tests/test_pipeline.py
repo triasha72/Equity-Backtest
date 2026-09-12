@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-
 from src.backtest import (
     FEATURES,
     Config,
@@ -92,7 +91,10 @@ def test_no_lookahead_shuffling_target_destroys_signal():
     panel = cross_sectional_zscore(build_panel(synthetic_prices(seed=1)), FEATURES)
     shuffled = panel.copy()
     rng = np.random.default_rng(7)
-    shuffled["target"] = rng.permutation(shuffled["target"].values)
+    observed = shuffled["target"].notna()
+    shuffled.loc[observed, "target"] = rng.permutation(
+        shuffled.loc[observed, "target"].values
+    )
     bt = run(shuffled, Config(min_train_months=24, min_names=20))
     assert abs(bt["net"].mean()) < 0.01, "shuffled target should not be profitable"
 

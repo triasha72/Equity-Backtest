@@ -44,15 +44,21 @@ def build_crsp_panel(frame: pd.DataFrame) -> pd.DataFrame:
     rows = []
     for ticker, security in frame.groupby("ticker", sort=True):
         security = security.sort_values("date").copy()
+        months = security["date"].dt.to_period("M").astype("int64")
+        if not months.diff().dropna().eq(1).all():
+            raise ValueError(
+                "CRSP history has missing months; cannot shift labels across gaps"
+            )
         lagged = security["adjusted_return"].shift(1)
         security["mom_12_1"] = (1.0 + lagged).rolling(11, min_periods=11).apply(
             np.prod
         ) - 1.0
         security["reversal"] = security["adjusted_return"]
         security["vol_12m"] = lagged.rolling(12, min_periods=12).std()
-        security["liquidity"] = np.log1p(
-            security["dollar_volume"].shift(1).rolling(12, min_periods=12).mean()
+        security["liquidity"] = np.log(
+            security["dollar_volume"].shift(1).rolling(12, min_periods=12).mean() / 21.0
         )
+        security["log_daily_dollar_volume"] = security["liquidity"]
         security["target"] = security["adjusted_return"].shift(-1)
         security["ticker"] = ticker
         rows.append(security)
@@ -65,5 +71,11 @@ def build_crsp_panel(frame: pd.DataFrame) -> pd.DataFrame:
         "vol_12m",
         "liquidity",
         "target",
+        "log_daily_dollar_volume",
     ]
-    return panel[columns].dropna().set_index(["date", "ticker"]).sort_index()
+    return (
+        panel[columns]
+        .dropna(subset=["mom_12_1", "reversal", "vol_12m", "liquidity"])
+        .set_index(["date", "ticker"])
+        .sort_index()
+    )
