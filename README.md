@@ -4,14 +4,14 @@
 
 ![tests](https://github.com/triasha72/Equity-Backtest/actions/workflows/tests.yml/badge.svg)
 
-A monthly, dollar-neutral, cross-sectional equity strategy built to a strict
-walk-forward protocol — and reported gross **and** net of transaction costs.
+A monthly, dollar-neutral, cross-sectional equity strategy with a walk-forward
+protocol. Results are reported before and after transaction costs.
 
 The point of this repository is not to present a profitable strategy. It is to
 run a well-known effect through an evaluation protocol strict enough that the
 result, whatever it turns out to be, can be believed.
 
-## Project story
+## Background
 
 **Situation.** Backtests can look profitable because they see future data, omit
 failed companies, ignore trading costs, or report only the best specification.
@@ -31,6 +31,22 @@ conclusion is not that this is a profitable strategy. It is that the tested
 signal was indistinguishable from zero on this biased fixed-universe sample.
 
 ---
+
+## System architecture
+
+```text
+Adjusted prices and volume
+        ↓
+Monthly feature calculation and data checks
+        ↓
+Expanding-window model training
+        ↓
+Cross-sectional ranking and long/short portfolio formation
+        ↓
+Turnover, participation-cap, and missing-return checks
+        ↓
+Performance metrics and committed variants log
+```
 
 ## Hypothesis
 

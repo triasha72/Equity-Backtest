@@ -1,6 +1,6 @@
 # What would make this backtest more credible
 
-[Read the project story and measured result](README.md)
+[Read the background and measured result](README.md)
 
 The current experiment answers a limited question: a ridge-ranked momentum
 strategy did not produce a statistically convincing net return on a fixed list
