@@ -28,7 +28,7 @@ def panel():
 
 def test_departing_position_is_charged():
     result = run(panel(), Config(min_train_months=2, min_names=2))
-    assert result.loc["2020-05-31", "exit_turnover"] == pytest.approx(0.5)
+    assert result.loc["2020-05-31", "exit_turnover"] > 0.5
     assert result.loc["2020-05-31", "turnover"] >= 1
 
 
@@ -47,3 +47,15 @@ def test_capacity_units_survive_standardization():
     )
     with pytest.raises(ValueError, match="raw log_daily"):
         run(data.drop(columns="log_daily_dollar_volume"), Config())
+
+
+def test_return_drift_changes_next_rebalance_turnover():
+    data = panel()
+    data = data.drop(index=pd.Timestamp("2020-05-31"), level="date")
+    result = run(data, Config(min_train_months=2, min_names=2, cost_bps=0))
+    assert result.iloc[1].turnover > 0
+
+
+def test_small_cross_section_does_not_silently_skip_open_positions():
+    with pytest.raises(ValueError, match="positions remain open"):
+        run(panel(), Config(min_train_months=2, min_names=3))

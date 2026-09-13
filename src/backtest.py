@@ -119,6 +119,10 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
         cur = panel.xs(t, level="date")
 
         if len(train) < cfg.min_names * 2 or len(cur) < cfg.min_names:
+            if prev_w.abs().sum() > 1e-12:
+                raise ValueError(
+                    "Insufficient cross-section while positions remain open"
+                )
             continue
         if cur["target"].isna().all():
             continue
@@ -161,7 +165,11 @@ def run(panel: pd.DataFrame, cfg: Config) -> pd.DataFrame:
                 "capacity_constrained": execution_scale < 1.0,
             }
         )
-        prev_w = w
+        ending_nav = 1.0 + gross - cost
+        if not np.isfinite(ending_nav) or ending_nav <= 0:
+            raise ValueError("Portfolio NAV became nonpositive or nonfinite")
+        # Carry marked position values relative to ending NAV, not stale targets.
+        prev_w = w * (1.0 + realised) / ending_nav
 
     return pd.DataFrame(rows).set_index("date") if rows else pd.DataFrame()
 
