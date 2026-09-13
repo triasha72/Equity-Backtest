@@ -27,7 +27,21 @@ def load_membership(path: str | Path) -> pd.DataFrame:
         raise ValueError("membership file contains an empty ticker")
     if (frame["end_date"].notna() & (frame["end_date"] < frame["start_date"])).any():
         raise ValueError("membership end_date precedes start_date")
-    return frame.sort_values(["ticker", "start_date"]).reset_index(drop=True)
+    frame = frame.sort_values(["ticker", "start_date"]).reset_index(drop=True)
+    # Fail at ingestion rather than much later during a backtest.  Overlapping
+    # intervals make point-in-time membership ambiguous and can duplicate
+    # stock-month observations after the join.
+    for ticker, rows in frame.groupby("ticker", sort=False):
+        previous_end = None
+        for index, row in enumerate(rows.itertuples(index=False)):
+            if previous_end is not None and row.start_date <= previous_end:
+                raise ValueError(f"membership intervals overlap for ticker {ticker}")
+            previous_end = row.end_date
+            if pd.isna(previous_end):
+                # An open interval must be the final interval for that ticker.
+                if index != len(rows) - 1:
+                    raise ValueError(f"open membership interval is not last for ticker {ticker}")
+    return frame
 
 
 def apply_point_in_time_membership(

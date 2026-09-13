@@ -135,3 +135,15 @@ def test_overlapping_membership_intervals_are_rejected():
     )
     with np.testing.assert_raises(ValueError):
         apply_point_in_time_membership(panel, membership)
+
+
+def test_membership_loader_rejects_open_interval_before_later_interval(tmp_path):
+    source = tmp_path / "membership.csv"
+    pd.DataFrame(
+        [
+            {"ticker": "T000", "start_date": "2012-01-01", "end_date": ""},
+            {"ticker": "T000", "start_date": "2014-01-01", "end_date": ""},
+        ]
+    ).to_csv(source, index=False)
+    with np.testing.assert_raises(ValueError):
+        load_membership(source)
