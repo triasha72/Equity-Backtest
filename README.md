@@ -276,3 +276,9 @@ Returns. *The Review of Financial Studies*, 29(1), 5–68.
 ## Implementation update
 
 See [implementation and evidence limits](docs/accounting-boundaries.md).
+
+## Where this stands
+
+I now reject overlapping or ambiguous point-in-time membership intervals when
+they are loaded. I still need licensed CRSP and delisting data, plus a more
+realistic trading-cost model, before I treat the returns as investment evidence.
